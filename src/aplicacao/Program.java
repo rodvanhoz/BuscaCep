@@ -1,20 +1,10 @@
 package aplicacao;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Scanner;
 
-import javax.xml.transform.stream.StreamSource;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import entidades.Endereco;
+import entidades.EnderecoLista;
 
 public class Program {
 
@@ -23,39 +13,51 @@ public class Program {
 		Scanner sc = new Scanner(System.in);
 		System.setProperty("file.encoding", "UTF-8");
 		
-		System.out.print("Digite um cep: ");
-		int cep = sc.nextInt();
+		System.out.print("Deseja procurar por CEP ou endereço? (C/E): ");
+		char escolha = sc.next().charAt(0);
 		
+		Endereco e = new Endereco();
 
-		String url = "https://viacep.com.br/ws/" + Integer.toString(cep) + "/json/";
-
-		URL url11 = new URL(url);
-		URLConnection uconn = url11.openConnection();
-
-		uconn.setRequestProperty("Content-Type", "text/json");
-		uconn.setDoInput(true);
-		uconn.setDoOutput(true);
-		HttpURLConnection conn = (HttpURLConnection) uconn;
-		conn.connect();
-		Object content = conn.getContent();
-
-		InputStream st = (InputStream) content;
-		BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-
-		String inputLine;
-		StringBuilder response = new StringBuilder();
-
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
+		if (escolha == 'C') {
+			System.out.print("Digite um cep: ");
+			int cep = sc.nextInt();
+			
+			e.setCep(String.format("%08d", cep));
 		}
-		in.close();
+		else if (escolha == 'E') {
+			sc.nextLine();
+			System.out.print("Digite o endereço ou parte: ");
+			String endereco = sc.nextLine();
+			
+			System.out.print("Digite a cidade: ");
+			String cidade = sc.nextLine();
+			
+			System.out.print("Digite a UF: ");
+			String uf = sc.nextLine();
+			
+			e.setLogradouro(endereco);
+			e.setLocalidade(cidade);
+			e.setUf(uf);
+		}
+		else {
+			System.out.println("Escolha inválida: " + escolha);
+			
+			sc.close();
+			return;
+		}
 		
-		ObjectMapper mapper = new ObjectMapper();
-        Endereco e = mapper.readValue(new StringReader(response.toString()), Endereco.class);
+		EnderecoLista el = new EnderecoLista(e);
+		el.buscaJSon();
         
-        System.out.println(e.toString());
-        
-        
+		for (Endereco end : el.getEnderecos()) {
+			System.out.println(end.toString());
+		}
+		
+		if (el.localizaCep("14085-100") != null) {
+			System.out.println("CEP ENCONTRADO!");
+			System.out.println(el.localizaCep("14085-100").toString());
+		}
+		
         sc.close();
         
 	}

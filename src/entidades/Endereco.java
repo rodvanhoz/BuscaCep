@@ -11,6 +11,8 @@ public class Endereco {
 	private String unidade;
 	private String ibge;
 	private String gia;
+	
+	
 	public String getCep() {
 		return cep;
 	}
